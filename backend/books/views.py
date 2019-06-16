@@ -10,25 +10,26 @@ from rest_framework.views import APIView
 from .models import Book, Book_rating, User_data
 from .serializers import  userSerializer, bookSerializer, bookRatingSerializer
 from pandas.io.json import json_normalize
-import matplotlib.pyplot as plt
-import sklearn.metrics as metrics
 from sklearn.neighbors import NearestNeighbors
 from scipy.spatial.distance import correlation, cosine
-import ipywidgets as widgets
 from IPython.display import display, clear_output
 from sklearn.metrics import pairwise_distances
 from sklearn.metrics import mean_squared_error
 from math import sqrt
-import sys, os
 from contextlib import contextmanager
 from django.http import HttpResponse, HttpResponseRedirect
+from django.core.paginator import Paginator
+
 
 class bookAPIView(generics.ListAPIView):
     resource_name = 'books'
     serializer_class = bookSerializer
     serializer_class = bookSerializer
     def get_queryset(self):
-        return Book.objects.all()
+        request = self.request
+        page = request.GET.get('page')
+        offset = int(page)*25
+        return Book.objects.all()[offset:offset + 25]
 
 class bookRudView(generics.RetrieveUpdateDestroyAPIView):
     resource_name       = 'books'
