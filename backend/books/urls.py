@@ -1,4 +1,4 @@
-from .views import bookAPIView, userBookRecommendationsAPIView, bookRudView, accountAPIView, sessionAPIView, userBookViewsAPIView
+from .views import bookAPIView, userBookRecommendationsAPIView, bookRudView, accountAPIView, sessionAPIView, userBookViewsAPIView, userBookRatesAPIView
 from django.conf.urls import url, include
 
 accounts_urls = [
@@ -22,6 +22,10 @@ user_books_views = [
   url(r'^$', userBookViewsAPIView.as_view(), name='user-book-views'),
 ]
 
+user_books_rates = [
+  url(r'^$', userBookRatesAPIView.as_view(), name='user-book-rates'),
+]
+
 
 urlpatterns = [
   url(r'^accounts', include(accounts_urls)),
@@ -29,4 +33,5 @@ urlpatterns = [
   url(r'^books', include(book_urls)),
   url(r'^books-recommendations', include(user_book_recommendations_urls)),
   url(r'^books-views', include(user_books_views)),
+  url(r'^books-rates', include(user_books_rates)),
 ]

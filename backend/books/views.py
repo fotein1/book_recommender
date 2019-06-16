@@ -85,3 +85,20 @@ class sessionAPIView(APIView):
 class userBookViewsAPIView(generics.CreateAPIView):
     resource_name       = 'user-book-view'
     serializer_class    = bookViewSerializer
+
+class userBookRatesAPIView(generics.CreateAPIView):
+    def post(self, request):
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(request.body)
+        user_id = body['User_id']
+        ISBN = body['ISBN']
+        rating = body['rating']
+
+        try:
+            obj, created = Book_rating.objects.update_or_create(
+            User_id=user_id, ISBN=ISBN, rating=rating)
+        except:
+            return HttpResponseNotFound("Rating process fail")
+        
+        return Response({'user_id': user_id, 'ISBN': ISBN, 'rating':rating})
+
