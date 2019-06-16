@@ -36,7 +36,7 @@ class bookViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book_view
         fields = (
-            'User_id',
+            'user_id',
             'ISBN'
         )
 

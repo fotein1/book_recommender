@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from django.http import HttpResponse, HttpResponseNotFound
 from rest_framework.views import APIView
 from .models import Book, Book_rating, User_data
-from .serializers import  userSerializer, bookSerializer, bookRatingSerializer
+from .serializers import  userSerializer, bookSerializer, bookRatingSerializer, bookViewSerializer
 from pandas.io.json import json_normalize
 from sklearn.neighbors import NearestNeighbors
 from scipy.spatial.distance import correlation, cosine
@@ -81,3 +81,7 @@ class sessionAPIView(APIView):
 
         del request.session['member_id']
         return Response(204)
+
+class userBookViewsAPIView(generics.CreateAPIView):
+    resource_name       = 'user-book-view'
+    serializer_class    = bookViewSerializer
