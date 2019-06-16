@@ -1,11 +1,13 @@
 import pandas as pd
 import numpy as np
+import simplejson as json
 from pandas import DataFrame
 from rest_framework import generics, mixins
 from rest_framework import status
 from rest_framework.response import Response
+from django.http import HttpResponse, HttpResponseNotFound
 from rest_framework.views import APIView
-from .models import Book, Book_rating, User
+from .models import Book, Book_rating, User_data
 from .serializers import  userSerializer, bookSerializer, bookRatingSerializer
 from pandas.io.json import json_normalize
 import matplotlib.pyplot as plt
@@ -19,6 +21,7 @@ from sklearn.metrics import mean_squared_error
 from math import sqrt
 import sys, os
 from contextlib import contextmanager
+from django.http import HttpResponse, HttpResponseRedirect
 
 class bookAPIView(generics.ListAPIView):
     resource_name = 'books'
@@ -40,3 +43,40 @@ class userBookRecommendationsAPIView(APIView):
     serializer_class = bookSerializer
     def get_queryset(self):
         return Book.objects.all()
+
+
+class accountAPIView(generics.CreateAPIView):
+    resource_name       = 'accounts'
+    serializer_class    = userSerializer
+  
+
+class sessionAPIView(APIView):
+    def post(self, request):
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(request.body)
+        username = body['username']
+        password = body['password']
+
+        try:
+            user = User_data.objects.get(username=username, password=password)
+        except:
+            return HttpResponseNotFound( "User not found")
+
+        request.session['member_id'] = user.user_id
+
+        return Response({'user_id': user.user_id})
+
+
+    def delete(self, request):
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(request.body)
+        username = body['username']
+        password = body['password']
+
+        try:
+            user = User_data.objects.get(username=username, password=password)
+        except:
+            return HttpResponseNotFound( "User not found")
+
+        del request.session['member_id']
+        return Response(204)
