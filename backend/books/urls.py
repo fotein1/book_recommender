@@ -11,7 +11,7 @@ sessions_urls = [
 
 book_urls = [
   url(r'^$', bookAPIView.as_view(), name='books'),
-  url(r'^/(?P<ISBN>\d+)$', bookRudView.as_view(), name='book-details'),
+  url(r'^/(?P<ISBN>\w+)$', bookRudView.as_view(), name='book-details'),
 ]
 
 user_book_recommendations_urls = [
