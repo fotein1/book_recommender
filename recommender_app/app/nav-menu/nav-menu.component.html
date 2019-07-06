@@ -59,34 +59,34 @@
           <form action="">
             <div class="form-group">
               <label for="name">name</label>
-              <input id="name" type="text" class="form-control">
+              <input id="name" type="text" class="form-control" [(ngModel)] = "user.name" name='name'>
             </div>
 
             <div class="form-group">
               <label for="email">email</label>
-              <input id="email" type="email" class="form-control">
+              <input id="email" type="email" class="form-control" [(ngModel)] = "user.email" name='email'>
             </div>
 
             <div class="form-group">
               <label for="username">Username</label>
-              <input id="username" type="text" class="form-control">
+              <input id="username" type="text" class="form-control" [(ngModel)] = "user.username" name='username'>
             </div>
   
             <div class="form-group">
               <label for="password">Password:</label>
-              <input id="password" type="password" class="form-control">
+              <input id="password" type="password" class="form-control" [(ngModel)] = "user.password" name='password'>
             </div>
 
             <div class="form-group">
               <label for="password2">Repeat password</label>
-              <input id="password2" type="password" class="form-control">
+              <input id="password2" type="password" class="form-control" [(ngModel)] = "user.password_confirm" name='password_confirm'>
             </div>
           </form>
         </div>
   
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary">Save changes</button>
+          <button type="button" class="btn btn-primary" (click)="register()">Save changes</button>
         </div>
       </div>
     </div>

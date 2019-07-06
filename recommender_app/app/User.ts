@@ -6,6 +6,7 @@ export class User {
       pwd: string;
       confirmPwd: string;
     };
+    name: string;
     
     constructor(values: Object = {}) {
       //Constructor initialization
