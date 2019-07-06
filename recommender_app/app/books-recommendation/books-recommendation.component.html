@@ -1,0 +1,17 @@
+
+<div class="container">
+  <p>My Recommendations</p>
+  <table class="table">
+    <tr>
+      <td *ngFor="let book of books" routerLink="/detail/{{book.ISBN}}">
+          <div class="panel panel-default">
+            <div class="panel-body">
+                <img src="{{book.image_url_m}}" alt="Smiley face" height="70" width="70">
+                <p> {{book.title}}</p>
+                <p>{{book.author}}</p>
+            </div>
+          </div>
+      </td>
+    </tr>
+  </table>
+</div>

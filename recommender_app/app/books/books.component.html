@@ -1,0 +1,29 @@
+
+<div class="container">
+  <p>Books</p>
+  <table class="table">
+    <tr>
+      <th>Image</th>
+      <th>Title</th>
+      <th>Author</th>
+      <th>Publisher</th>
+    </tr>
+    <tr *ngFor="let book of books | paginate: { itemsPerPage: 10, currentPage: p };" routerLink="/detail/{{book.ISBN}}">
+      <td>
+        <img src="{{book.image_url_s}}" alt="Smiley face" height="42" width="42">
+      </td>
+      <td routerLink="/detail/{{book.id}}">
+        {{book.title}}
+      </td>
+      <td routerLink="/detail/{{book.id}}">
+        {{book.author}}
+      </td>
+      <td routerLink="/detail/{{book.id}}">
+        {{book.publisher}}
+      </td>
+    </tr>
+  </table>
+  <pagination-controls (pageChange)="p = $event"></pagination-controls>
+</div>
+
+<app-books-recommendation></app-books-recommendation>

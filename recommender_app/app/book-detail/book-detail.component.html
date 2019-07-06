@@ -1,0 +1,10 @@
+
+<div *ngIf="book">
+    <h2>{{book.title | uppercase}} Details</h2>
+    <div><span><b>ISBN:</b></span>{{book.ISBN}}</div>
+    <div><img src="{{book.image_url_l}}" alt="Smiley face"></div>
+    <div><span><b>author:</b></span>{{book.author}}</div>
+    <div><span><b>publisher:</b></span>{{book.publisher}}</div>
+</div>
+
+<button (click)="goBack()">go back</button>
