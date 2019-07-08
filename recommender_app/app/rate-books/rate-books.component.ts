@@ -1,20 +1,18 @@
-import { Component, OnInit, Input } from '@angular/core';
-import { Book } from '../book';
-import { BookService }  from '../book.service';
+import { Component, OnInit } from '@angular/core';
+import { RateBooksService }  from '../rate-books.service';
 import { ActivatedRoute } from '@angular/router';
-import { Location } from '@angular/common';
 import { LocalStorageService, SessionStorageService, LocalStorage, SessionStorage } from 'angular-web-storage';
 
 @Component({
-  selector: 'app-book-detail',
-  templateUrl: './book-detail.component.html',
-  styleUrls: ['./book-detail.component.css']
+  selector: 'app-rate-books',
+  templateUrl: './rate-books.component.html',
+  styleUrls: ['./rate-books.component.css']
 })
-export class BookDetailComponent implements OnInit {
-  book: Book[];
+export class RateBooksComponent implements OnInit {
   private logged_in:boolean;
   private logged_in_username:string;
   private logged_in_user_id: any;
+  private rate:any;
 
   @LocalStorage() localValue: Object = { text: `Hello ${+new Date}`};
   @LocalStorage('newKey', 10, 'h') localValue2: Object = { text: `Hello ${+new Date}`};
@@ -22,36 +20,26 @@ export class BookDetailComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private bookService: BookService,
-    private location: Location,
+    private rateBookService: RateBooksService,
     public local: LocalStorageService,
     public session: SessionStorageService
   ) { }
 
-  ngOnInit(): void {
+  ngOnInit() {
+    this.rate = '5';
     this.logged_in = this.get('logged_in');
     this.logged_in_username = this.get('logged_in_username');
     this.logged_in_user_id = this.get('logged_in_user_id');
 
-    this.getBook();
-    this.viewBook();
+    this.rateBook();
   }
 
-  getBook(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    this.bookService.getBook(id)
-    .subscribe(book => this.book = book);
-  }
-
-  viewBook(): void {
+  rateBook(): void {
     const book_id = this.route.snapshot.paramMap.get('id');
     const user_id = this.get('logged_in_user_id');
-    this.bookService.viewBook({'user_id': user_id, 'ISBN': book_id})
+    
+    this.rateBookService.rateBook({'User_id': user_id, 'ISBN': book_id, rating: this.rate})
       .subscribe(data => console.log(data));
-  }
-
-  goBack(): void {
-    this.location.back();
   }
 
   /**

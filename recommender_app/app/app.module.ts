@@ -13,6 +13,7 @@ import {NgxPaginationModule} from 'ngx-pagination';
 import { NavMenuComponent } from './nav-menu/nav-menu.component';
 import { StorageServiceModule} from 'angular-webstorage-service';
 import { AngularWebStorageModule } from 'angular-web-storage';
+import { RateBooksComponent } from './rate-books/rate-books.component';
 
 @NgModule({
   declarations: [
@@ -21,7 +22,8 @@ import { AngularWebStorageModule } from 'angular-web-storage';
     MesssagesComponent,
     BookDetailComponent,
     BooksRecommendationComponent,
-    NavMenuComponent
+    NavMenuComponent,
+    RateBooksComponent
   ],
   imports: [
     BrowserModule,

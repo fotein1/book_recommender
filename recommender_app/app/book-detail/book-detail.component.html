@@ -1,10 +1,17 @@
-
 <div *ngIf="book">
     <h2>{{book.title | uppercase}} Details</h2>
-    <div><span><b>ISBN:</b></span>{{book.ISBN}}</div>
-    <div><img src="{{book.image_url_l}}" alt="Smiley face"></div>
-    <div><span><b>author:</b></span>{{book.author}}</div>
-    <div><span><b>publisher:</b></span>{{book.publisher}}</div>
+    <div calss="row">
+        <div class="col-xs-4">
+            <img  class="img-responseve" src="{{book.image_url_l}}" alt="Smiley face">
+        </div>
+        <div class="col-xs-8" style="margin-top:50px;">
+            <div><span><b>ISBN:</b></span>{{book.ISBN}}</div>
+            <div><span><b>author:</b></span>{{book.author}}</div>
+            <div><span><b>publisher:</b></span>{{book.publisher}}</div>
+            <div><app-rate-books></app-rate-books></div>
+        </div>
+    </div>
+    <div class="row">
+        <button (click)="goBack()">go back</button>
+    </div>
 </div>
-
-<button (click)="goBack()">go back</button>

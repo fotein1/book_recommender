@@ -8,17 +8,17 @@
       <th>Author</th>
       <th>Publisher</th>
     </tr>
-    <tr *ngFor="let book of books | paginate: { itemsPerPage: 10, currentPage: p };" routerLink="/detail/{{book.ISBN}}">
+    <tr *ngFor="let book of books | paginate: { itemsPerPage: 10, currentPage: p };" routerLink="/detail/{{book.ISBN}}" >
       <td>
         <img src="{{book.image_url_s}}" alt="Smiley face" height="42" width="42">
       </td>
-      <td routerLink="/detail/{{book.id}}">
+      <td routerLink="/detail/{{book.ISBN}}">
         {{book.title}}
       </td>
-      <td routerLink="/detail/{{book.id}}">
+      <td routerLink="/detail/{{book.ISBN}}">
         {{book.author}}
       </td>
-      <td routerLink="/detail/{{book.id}}">
+      <td routerLink="/detail/{{book.ISBN}}">
         {{book.publisher}}
       </td>
     </tr>

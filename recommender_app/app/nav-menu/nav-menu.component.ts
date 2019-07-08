@@ -69,6 +69,9 @@ export class NavMenuComponent implements OnInit {
     $('#register_panel').addClass('display-none');
     $('#logged_in_panel').removeClass('display-none').text(user['username']);
     $('#logout_panel').removeClass('display-none');
+
+    $('#login_moadl').hide();
+    $('#register_modal').hide();
   }
 
   /**
