@@ -1,17 +1,20 @@
-
 <div class="container">
   <p>My Recommendations</p>
-  <table class="table">
-    <tr>
-      <td *ngFor="let book of books" routerLink="/detail/{{book.ISBN}}">
-          <div class="panel panel-default">
-            <div class="panel-body">
-                <img src="{{book.image_url_m}}" alt="Smiley face" height="70" width="70">
-                <p> {{book.title}}</p>
-                <p>{{book.author}}</p>
-            </div>
-          </div>
-      </td>
-    </tr>
-  </table>
+  <div class="row scrolling-wrapper">
+    <div class="col-xs-12">
+      <table class="table">
+        <tr>
+          <td *ngFor="let book of books" routerLink="/detail/{{book.book.ISBN}}">
+              <div class="panel panel-default">
+                <div class="panel-body">
+                    <img src="{{book.book.image_url_m}}" alt="Smiley face" height="70" width="70">
+                    <p> {{book.book.title}}</p>
+                    <p>{{book.book.author}}</p>
+                </div>
+              </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
 </div>

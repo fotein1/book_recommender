@@ -14,26 +14,19 @@ export class RecommendationBookService {
     private http: HttpClient,
     private messageService: MessageService) { }
 
-  private booksUrl = 'http://localhost:8000/api/books';
-  private bookDetailsUrl = 'http://localhost:8000/api/books/';
+  private recommendationsUrl = 'http://localhost:8000/api/books-recommendations/users/';
 
   private log(message: string) {
     this.messageService.add('RecommendationBookService: ${message}');
   }
 
-  getBooksRecommendations(): Observable<Book[]> {
-    return this.http.get<Book[]>(this.booksUrl)
+  getBooksRecommendations(user_id:any): Observable<Book[]> {
+    return this.http.get<Book[]>(this.recommendationsUrl + user_id)
       .pipe(
         catchError(this.handleError('getBooks', []))
       )
   }
 
-  getBook(ISBN: number): Observable<Book[]> {
-    return this.http.get<Book[]>(this.bookDetailsUrl + ISBN)
-      .pipe(
-        catchError(this.handleError('getBook', []))
-      )
-  }
 
  /**
   * Handle Http operation that failed.
