@@ -15,7 +15,7 @@ book_urls = [
 ]
 
 user_book_recommendations_urls = [
-  url(r'^/users/(?P<pk>\d+)$', userBookRecommendationsAPIView.as_view(), name='user-book-recommendations'),
+  url(r'^/users/(?P<user_id>\d+)$', userBookRecommendationsAPIView.as_view(), name='user-book-recommendations'),
 ]
 
 user_books_views = [
