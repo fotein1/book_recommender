@@ -29,3 +29,7 @@ class User_Book_prediction(models.Model):
   user_id = models.IntegerField()
   ISBN    = models.CharField(max_length=255)
   prediction = models.IntegerField()
+
+class Book_similarities(models.Model):
+  ISBN = models.CharField(max_length=255)
+  ISBN_similar = models.CharField(max_length=255)
