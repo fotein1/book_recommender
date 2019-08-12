@@ -24,6 +24,8 @@ from django.core.paginator import Paginator
 from rest_framework.renderers import JSONRenderer
 from rest_framework import serializers
 from django.db.models import Sum
+from .recommendationLib import getUserBookViews, adjustPredictionsByUserFeedback, getUserPredictions
+
 
 class bookAPIView(generics.ListAPIView):
     resource_name = 'books'
@@ -45,36 +47,18 @@ class bookRudView(generics.RetrieveUpdateDestroyAPIView):
 class userBookRecommendationsAPIView(APIView):
     def get(self, request, user_id, *args, **kwargs):
         recommendations = []
+
+        adjust_results = True
+
         try:
-            predictions = User_Book_prediction.objects.filter(user_id=user_id).order_by('-prediction')
-    
-            if predictions:
-                for prediction in predictions:
-                    result = bookUserPredictionSerializer(prediction, many=False).data
-                    try:
-                        book   = Book.objects.get(ISBN=result['ISBN'])
-                        result['book'] = bookSerializer(book, many=False).data
-                    except:
-                        result['book'] = ''
+            recommendations = getUserPredictions(user_id, recommendations)
 
-                    recommendations.append(result)
+            if adjust_results == True:
+                book_views = getUserBookViews(user_id)
+                adjustPredictionsByUserFeedback(recommendations, book_views)
+                recommendations = getUserPredictions(user_id, recommendations)
+                return Response(recommendations)
 
-            if not predictions:
-                try:
-                    ratings = Book_rating.objects.values('ISBN').annotate(score = Sum('rating')).order_by('-score')[:100]
-                    for rating in ratings:
-                        result = rating
-                        try:
-                            book   = Book.objects.get(ISBN=result['ISBN'])
-                            result['book'] = bookSerializer(book, many=False).data
-                        except:
-                            result['book'] = ''
-
-                        recommendations.append(result)
-                except:
-                    return HttpResponseNotFound("Recommendations not found")
-
-            return Response(recommendations)
         except:
             return HttpResponseNotFound("Recommendations not found")
 
