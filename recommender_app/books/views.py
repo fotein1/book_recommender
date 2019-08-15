@@ -25,7 +25,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework import serializers
 from django.db.models import Sum
 from .recommendationLib import getUserBookViews, adjustPredictionsByUserFeedback, getUserPredictions
-
+from django.core.cache import cache
 
 class bookAPIView(generics.ListAPIView):
     resource_name = 'books'
@@ -47,20 +47,23 @@ class bookRudView(generics.RetrieveUpdateDestroyAPIView):
 class userBookRecommendationsAPIView(APIView):
     def get(self, request, user_id, *args, **kwargs):
         recommendations = []
+        recommendation_expire_cache_name = 'recommendation_expire_' + user_id
+        reocmmendations_user_cache_name  = 'recommendations_' + user_id
 
-        adjust_results = True
+        if recommendation_expire_cache_name in cache and reocmmendations_user_cache_name in cache: 
+            recommendations = cache.get(reocmmendations_user_cache_name)
+        else:
+            try:
+                recommendations = getUserPredictions(user_id, recommendations)
 
-        try:
-            recommendations = getUserPredictions(user_id, recommendations)
-
-            if adjust_results == True:
                 book_views = getUserBookViews(user_id)
                 adjustPredictionsByUserFeedback(recommendations, book_views)
                 recommendations = getUserPredictions(user_id, recommendations)
-                return Response(recommendations)
 
-        except:
-            return HttpResponseNotFound("Recommendations not found")
+                cache.set(recommendation_expire_cache_name, True, timeout=3600)
+                cache.set(reocmmendations_user_cache_name, recommendations, timeout=3600*24)
+            except:
+                return HttpResponseNotFound("Recommendations not found")
 
         return Response(recommendations)
 
