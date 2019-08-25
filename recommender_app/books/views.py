@@ -26,6 +26,7 @@ from rest_framework import serializers
 from django.db.models import Sum
 from .recommendationLib import getUserBookViews, adjustPredictionsByUserFeedback, getUserPredictions
 from django.core.cache import cache
+from .tasks import find_recommended_items
 
 class bookAPIView(generics.ListAPIView):
     resource_name = 'books'
@@ -50,18 +51,12 @@ class userBookRecommendationsAPIView(APIView):
         recommendation_expire_cache_name = 'recommendation_expire_' + user_id
         reocmmendations_user_cache_name  = 'recommendations_' + user_id
 
-        if recommendation_expire_cache_name in cache and reocmmendations_user_cache_name in cache: 
+        recommendations = cache.get(reocmmendations_user_cache_name)
+        if recommendation_expire_cache_name in cache and reocmmendations_user_cache_name in cache and recommendations: 
             recommendations = cache.get(reocmmendations_user_cache_name)
         else:
             try:
-                recommendations = getUserPredictions(user_id, recommendations)
-
-                book_views = getUserBookViews(user_id)
-                adjustPredictionsByUserFeedback(recommendations, book_views)
-                recommendations = getUserPredictions(user_id, recommendations)
-
-                cache.set(recommendation_expire_cache_name, True, timeout=3600)
-                cache.set(reocmmendations_user_cache_name, recommendations, timeout=3600*24)
+                find_recommended_items.delay(user_id, recommendations)
             except:
                 return HttpResponseNotFound("Recommendations not found")
 
