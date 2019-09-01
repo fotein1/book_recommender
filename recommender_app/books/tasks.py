@@ -9,7 +9,7 @@ def find_recommended_items(user_id, recommendations):
 
     recommendations = getUserPredictions(user_id, recommendations)
     book_views = getUserBookViews(user_id)
-    adjustPredictionsByUserFeedback(recommendations, book_views)
+    adjustPredictionsByUserFeedback(recommendations, book_views, user_id)
     recommendations = getUserPredictions(user_id, recommendations)
 
     cache.set(recommendation_expire_cache_name, True, timeout=3600)

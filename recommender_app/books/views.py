@@ -60,7 +60,10 @@ class userBookRecommendationsAPIView(APIView):
                 find_recommended_items.delay(user_id, recommendations)
             except:
                 return HttpResponseNotFound("Recommendations not found")
-                
+
+        if not recommendations:
+            recommendations = getUserPredictions(user_id, recommendations)
+
         return Response(recommendations)
 
 class accountAPIView(generics.CreateAPIView):
