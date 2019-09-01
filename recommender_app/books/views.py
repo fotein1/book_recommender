@@ -55,11 +55,12 @@ class userBookRecommendationsAPIView(APIView):
         if recommendation_expire_cache_name in cache and reocmmendations_user_cache_name in cache and recommendations: 
             recommendations = cache.get(reocmmendations_user_cache_name)
         else:
+            recommendations = []
             try:
                 find_recommended_items.delay(user_id, recommendations)
             except:
                 return HttpResponseNotFound("Recommendations not found")
-
+                
         return Response(recommendations)
 
 class accountAPIView(generics.CreateAPIView):
