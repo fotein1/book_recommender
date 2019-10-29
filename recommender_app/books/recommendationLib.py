@@ -36,24 +36,13 @@ ROCHIO_NEGATIVE_WEIGHT = 0.15
     
     @param int user_id          The id of user
     @param int recommendations  An array with recommendations
+    @param boo get_default      True to get the default recommended items
 
     @return arr                 An array with predictions
 """
-def getUserPredictions(user_id, recommendations):
-    predictions = User_Book_prediction.objects.filter(user_id=user_id).order_by('-prediction')
-
-    if predictions:
-        for prediction in predictions:
-            result = bookUserPredictionSerializer(prediction, many=False).data
-            try:
-                book   = Book.objects.get(ISBN=result['ISBN'])
-                result['book'] = bookSerializer(book, many=False).data
-            except:
-                result['book'] = ''
-
-            recommendations.append(result)
-
-    if not predictions:
+def getUserPredictions(user_id, recommendations, get_default):
+    predictions = User_Book_prediction.objects.filter(user_id=user_id).order_by('-prediction')[:100]
+    if not predictions or get_default == True:
         try:
             ratings = Book_rating.objects.values('ISBN').annotate(score = Sum('rating')).order_by('-score')[:100]
             for rating in ratings:
@@ -64,9 +53,22 @@ def getUserPredictions(user_id, recommendations):
                 except:
                     result['book'] = ''
 
-                recommendations.append(result)
+                if result['book'] != '':
+                    recommendations.append(result)
         except:
             return HttpResponseNotFound("Recommendations not found")
+
+    if predictions and get_default == False:
+        for prediction in predictions:
+            result = bookUserPredictionSerializer(prediction, many=False).data
+            try:
+                book   = Book.objects.get(ISBN=result['ISBN'])
+                result['book'] = bookSerializer(book, many=False).data
+            except:
+                result['book'] = ''
+
+            if result['book'] != '':
+                recommendations.append(result)
 
     return recommendations
 
@@ -89,10 +91,10 @@ def getUserBookViews(user_id):
             result = bookViewSerializer(view, many=False).data
             book_views.append(result['ISBN'])
     
-        return book_views
+    return book_views
     
-    return HttpResponseNotFound("User has not viewwed books yet")
 
+    
 """
     Adjust predictions based on user feedback
     
@@ -105,7 +107,9 @@ def adjustPredictionsByUserFeedback(recommendations, book_views, user_id):
     ISBN_negative_similar_ids = []
 
     for recommendation in recommendations:
+        counter = 0        
         if recommendation['ISBN'] in book_views:
+            counter = counter + 1
             try:
                 similar_books = Book_similarities.objects.filter(ISBN=recommendation['ISBN'])
                 for book in similar_books:
@@ -120,6 +124,7 @@ def adjustPredictionsByUserFeedback(recommendations, book_views, user_id):
             try:
                 similar_books = Book_similarities.objects.filter(ISBN=recommendation['ISBN'])
                 for book in similar_books:
+                    book = bookSimilaritiesSerializer(book, many=False).data
                     if book['ISBN_similar'] not in ISBN_negative_similar_ids:
                         ISBN_negative_similar_ids.append(book['ISBN_similar'])
 
@@ -127,11 +132,17 @@ def adjustPredictionsByUserFeedback(recommendations, book_views, user_id):
             except:
                 ISBN_negative_similar_ids.append(recommendation['ISBN'])
 
-    if  ISBN_positive_similar_ids:            
-        savePositivePredictionsOfRecommendedItems(ISBN_positive_similar_ids, user_id)
+    insert_predictions = False
+    user_predictions = User_Book_prediction.objects.filter(user_id=user_id).order_by('-prediction')[:37]
+    if not user_predictions:
+        insert_predictions = True
+       
+    if  ISBN_positive_similar_ids:     
+        savePositivePredictionsOfRecommendedItems(ISBN_positive_similar_ids, user_id, insert_predictions)
             
     if ISBN_negative_similar_ids:
-        saveNegativePredictionsOfRecommendedItems(ISBN_negative_similar_ids, user_id)
+        saveNegativePredictionsOfRecommendedItems(ISBN_negative_similar_ids, user_id, insert_predictions)
+    
         
 """
     Calculate weight = rochio_weight*(sum_of_predictions/predicted_itemss)
@@ -147,23 +158,32 @@ def calculateWeight(rochio_weight, predicted_items_counter, predictions_sum):
     Adjust the predicted items with a positive weight
     
     @param arr ISBN_positive_similar_ids An array with positive similar ids
-    @param int user_id         The user id
+    @param int user_id            The user id
+    @param boo insert_predictions True if we want to insert predictions, else false 
 """
-def savePositivePredictionsOfRecommendedItems(ISBN_positive_similar_ids, user_id):
+def savePositivePredictionsOfRecommendedItems(ISBN_positive_similar_ids, user_id, insert_predictions):
     predicted_items_counter = 0
     predictions_sum = 0
-    predictions = User_Book_prediction.objects.filter(ISBN__in=ISBN_positive_similar_ids)
 
-    if predictions:
-        for prediction in predictions:
-            prediction = bookUserPredictionSerializer(prediction, many=False).data
-            predicted_items_counter = predicted_items_counter + 1
-            predictions_sum = predictions_sum + prediction['prediction']
-    
-        positive_weight = calculateWeight(ROCHIO_POSITIVE_WEIGHT, predicted_items_counter, predictions_sum)
-        User_Book_prediction.objects.filter(ISBN__in=ISBN_positive_similar_ids).update(prediction=F('prediction') + positive_weight)
+    if insert_predictions is False:
+        predictions = User_Book_prediction.objects.filter(ISBN__in=ISBN_positive_similar_ids)
 
-    if not predictions:
+        if predictions:
+            for prediction in predictions:
+                prediction = bookUserPredictionSerializer(prediction, many=False).data
+                predicted_items_counter = predicted_items_counter + 1
+                predictions_sum = predictions_sum + prediction['prediction']
+        
+            positive_weight = calculateWeight(ROCHIO_POSITIVE_WEIGHT, predicted_items_counter, predictions_sum)
+            if positive_weight <= 0.0:
+                positive_weight =  1
+
+            if positive_weight > 10:
+                positive_weight =  10
+                    
+            User_Book_prediction.objects.filter(ISBN__in=ISBN_positive_similar_ids).update(prediction=F('prediction') + abs(positive_weight))
+
+    if insert_predictions is True:
         for item_id in ISBN_positive_similar_ids:
             positive_weight = 1
             user_book_predicition = User_Book_prediction()
@@ -179,21 +199,27 @@ def savePositivePredictionsOfRecommendedItems(ISBN_positive_similar_ids, user_id
     
     @param arr ISBN_negative_similar_ids An array with negative similar ids
     @param int user_id         The user id
+    @param boo insert_predictions True if we want to insert predictions, else false 
 """
-def saveNegativePredictionsOfRecommendedItems(ISBN_negative_similar_ids, user_id):
+def saveNegativePredictionsOfRecommendedItems(ISBN_negative_similar_ids, user_id, insert_predictions):
     predicted_items_counter = 0
     predictions_sum = 0
-    predictions = User_Book_prediction.objects.filter(ISBN__in=ISBN_negative_similar_ids)
-    if predictions:
-        for prediction in predictions:
-            prediction = bookUserPredictionSerializer(prediction, many=False).data
-            predicted_items_counter = predicted_items_counter + 1
-            predictions_sum = predictions_sum + prediction['prediction']
 
-        negative_weight = calculateWeight(ROCHIO_NEGATIVE_WEIGHT, predicted_items_counter, predictions_sum)
-        User_Book_prediction.objects.filter(ISBN__in=ISBN_negative_similar_ids).update(prediction=F('prediction') - negative_weight)
+    if insert_predictions is False:
+        predictions = User_Book_prediction.objects.filter(ISBN__in=ISBN_negative_similar_ids)
+        if predictions:
+            for prediction in predictions:
+                prediction = bookUserPredictionSerializer(prediction, many=False).data
+                predicted_items_counter = predicted_items_counter + 1
+                predictions_sum = predictions_sum + prediction['prediction']
 
-    if not predictions:
+            negative_weight = calculateWeight(ROCHIO_NEGATIVE_WEIGHT, predicted_items_counter, predictions_sum)
+            if negative_weight == 0.0:
+                negative_weight = 1
+
+            User_Book_prediction.objects.filter(ISBN__in=ISBN_negative_similar_ids).update(prediction=F('prediction') - abs(negative_weight))
+
+    if insert_predictions is True:
         for item_id in ISBN_negative_similar_ids:
             positive_weight = 0
             user_book_predicition = User_Book_prediction()

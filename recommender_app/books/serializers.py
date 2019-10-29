@@ -1,7 +1,16 @@
 from rest_framework import serializers
-from .models import Book, Book_rating, Book_view, User_data, User_Book_prediction
+from .models import Book, Book_rating, Book_view, User_data, User_Book_prediction, Book_similarities
 
 class userSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User_data
+        fields = (
+            'user_id',
+            'username',
+            'password'
+        )
+
+class createUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User_data
         fields = (
@@ -51,3 +60,11 @@ class bookUserPredictionSerializer(serializers.ModelSerializer):
             'prediction',
             'book'
         ]
+
+class bookSimilaritiesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Book_similarities
+        fields = (
+            'ISBN',
+            'ISBN_similar'
+        )

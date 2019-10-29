@@ -10,7 +10,7 @@ from rest_framework import serializers
 from django.http import HttpResponse, HttpResponseNotFound
 from rest_framework.views import APIView
 from .models import Book, Book_rating, User_data, User_Book_prediction
-from .serializers import  userSerializer, bookSerializer, bookRatingSerializer, bookViewSerializer, bookUserPredictionSerializer
+from .serializers import  userSerializer, createUserSerializer, bookSerializer, bookRatingSerializer, bookViewSerializer, bookUserPredictionSerializer
 from pandas.io.json import json_normalize
 from sklearn.neighbors import NearestNeighbors
 from scipy.spatial.distance import correlation, cosine
@@ -56,21 +56,24 @@ class userBookRecommendationsAPIView(APIView):
             recommendations = cache.get(reocmmendations_user_cache_name)
         else:
             recommendations = []
+            recommendations = getUserPredictions(user_id, recommendations, False)
+
             try:
                 find_recommended_items.delay(user_id, recommendations)
             except:
                 return HttpResponseNotFound("Recommendations not found")
 
+            return Response(recommendations)
+
         if not recommendations:
-            recommendations = getUserPredictions(user_id, recommendations)
+            recommendations = getUserPredictions(user_id, recommendations, True)
 
         return Response(recommendations)
 
 class accountAPIView(generics.CreateAPIView):
     resource_name       = 'accounts'
-    serializer_class    = userSerializer
+    serializer_class    = createUserSerializer
   
-
 class sessionAPIView(APIView):
     def post(self, request):
         body_unicode = request.body.decode('utf-8')
@@ -98,7 +101,7 @@ class sessionAPIView(APIView):
         except:
             return HttpResponseNotFound( "User not found")
 
-        del request.session['member_id']
+        #del request.session['member_id']
         return Response(204)
 
 class userBookViewsAPIView(generics.CreateAPIView):
