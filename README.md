@@ -1,1 +1,3 @@
-# book_recommedner
+# book_recommender application
+Some online available datasets including users, books and ratings were used to fill  application’s database and a collaborative filtering algorithm was implemented in first place to calculate users’ recommended books. The system  received feedback from the user(recommended books user has viewed) and tailor its suggestions accordingly. In order to readjust the recommended items based on user’s feedback, the Rochio algorithm was implemented. Technologies used: Django, Python Django framework for backend part, Angular,js for frontend part of application, python machine learning algorithms Sckikit, python pandas library, redis cache, celery message queue,
+
